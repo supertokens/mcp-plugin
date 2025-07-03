@@ -1,0 +1,16 @@
+/node_modules
+.DS_Store
+/.history
+*.js.map
+coverage
+.vscode
+.idea
+dist
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/test_report
+/temp_test_exports
+/temp_*
+/.nyc_output
+.env

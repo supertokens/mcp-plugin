@@ -1,0 +1,58 @@
+{
+  "name": "supertokens-mcp-plugin",
+  "version": "1.0.0",
+  "description": "MCP plugin for SuperTokens",
+  "main": "index.js",
+  "scripts": {
+    "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json",
+    "pretty": "npx pretty-quick .",
+    "build-pretty": "npm run build && npm run pretty && npm run pretty",
+    "pretty-check": "npx pretty-quick --check ."
+  },
+  "keywords": [
+    "auth",
+    "authentication",
+    "authorisation",
+    "nodejs",
+    "supertokens",
+    "jwt",
+    "refresh tokens",
+    "mcp",
+    "ai"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supertokens/mcp-plugin.git"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./index": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./index.js": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
+  "author": "rishabhpoddar",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/supertokens/supertokens-node/issues"
+  },
+  "homepage": "https://github.com/supertokens/supertokens-node#readme",
+  "dependencies": {
+    "supertokens-node": "^6.0.3"
+  },
+  "devDependencies": {
+    "prettier": "2.0.5",
+    "pretty-quick": "^3.1.1",
+    "typescript": "4.2"
+  },
+  "browser": {
+    "fs": false
+  }
+}
