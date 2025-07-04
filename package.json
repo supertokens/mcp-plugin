@@ -38,19 +38,21 @@
       "default": "./index.js"
     }
   },
-  "author": "rishabhpoddar",
+  "author": "sattvikc",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/supertokens/supertokens-node/issues"
   },
   "homepage": "https://github.com/supertokens/supertokens-node#readme",
   "dependencies": {
-    "supertokens-node": "^6.0.3"
+    "@modelcontextprotocol/sdk": "^1.13.0",
+    "supertokens-node": "github:supertokens/supertokens-node#feat/plugin/base",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "prettier": "2.0.5",
     "pretty-quick": "^3.1.1",
-    "typescript": "4.2"
+    "typescript": "^4.7.2"
   },
   "browser": {
     "fs": false
