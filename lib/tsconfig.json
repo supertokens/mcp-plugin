@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES2022",
     "strictNullChecks": true,
     "declaration": true,
     "module": "commonJS",
     "outDir": "build",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "noImplicitAny": true,
     "sourceMap": false,
     "noImplicitThis": false,
@@ -15,7 +15,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "lib": ["ES2017"],
+    "lib": ["ES2022"],
     "esModuleInterop": true
   },
   "include": ["ts/**/*"],
