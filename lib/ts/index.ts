@@ -1,7 +1,5 @@
 import SuperTokensMcpServer from "./server";
 import SuperTokensAdminMcpServer from "./adminServer";
+import createPlugin from "./plugin";
 
-export default {
-  SuperTokensMcpServer,
-  SuperTokensAdminMcpServer,
-};
+export { SuperTokensMcpServer, SuperTokensAdminMcpServer, createPlugin };

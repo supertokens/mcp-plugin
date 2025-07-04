@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json",
-    "pretty": "npx pretty-quick .",
+    "pretty": "npx pretty-quick . --ignore-path .gitignore",
     "build-pretty": "npm run build && npm run pretty && npm run pretty",
     "pretty-check": "npx pretty-quick --check ."
   },
@@ -44,9 +44,9 @@
     "url": "https://github.com/supertokens/supertokens-node/issues"
   },
   "homepage": "https://github.com/supertokens/supertokens-node#readme",
-  "dependencies": {
+  "peerDependencies": {
     "@modelcontextprotocol/sdk": "^1.13.0",
-    "supertokens-node": "github:supertokens/supertokens-node#feat/plugin/base",
+    "supertokens-node": "github:supertokens/supertokens-node#23.0",
     "zod": "^3.25.67"
   },
   "devDependencies": {

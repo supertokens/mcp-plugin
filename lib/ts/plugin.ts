@@ -32,8 +32,8 @@ const verifySessionForMCP = (next: handlerType): handlerType => {
 
     const authInfo: AuthInfo = {
       token: jwt,
-      scopes: payload.scope as string[],
-      clientId: payload.clientId as string,
+      scopes: payload.scp as string[],
+      clientId: payload.client_id as string,
       extra: payload,
       expiresAt: payload.exp as number,
     };
@@ -137,9 +137,12 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
   return {
     id: "st-mcp",
     version: "1.0.0",
-    compatibleSDKVersions: [],
+    compatibleSDKVersions: ["23.0.0"],
     overrideMap: {
       oauth2provider: {
+        recipeInitRequired: true,
+      },
+      openid: {
         recipeInitRequired: true,
       },
     },
@@ -179,7 +182,6 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
         },
         handler: async (_req, res) => {
           const oauthConfig = await OpenID.getOpenIdDiscoveryConfiguration();
-
           await res.sendJSONResponse({
             ...oauthConfig,
             response_types_supported: ["code", "id_token", "id_token token"],
@@ -215,17 +217,20 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
         verifySessionOptions: { sessionRequired: false },
         handler: async (req, res) => {
           try {
-            const response = await fetch(config.supertokens!.connectionURI, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization:
-                  config.supertokens?.apiKey !== undefined
-                    ? `Bearer ${config.supertokens!.apiKey}`
-                    : undefined,
-              },
-              body: JSON.stringify(await req.getBodyAsJSONOrFormData()),
-            });
+            const response = await fetch(
+              `${config.supertokens!.connectionURI}/recipe/oauth/clients`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization:
+                    config.supertokens?.apiKey !== undefined
+                      ? `Bearer ${config.supertokens!.apiKey}`
+                      : undefined,
+                },
+                body: JSON.stringify(await req.getBodyAsJSONOrFormData()),
+              }
+            );
 
             const data: any = await response.json();
             res.setStatusCode(response.status);
