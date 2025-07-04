@@ -2,17 +2,135 @@ import { PluginRouteHandler, SuperTokensPlugin } from "supertokens-node/types";
 import SuperTokensMcpServer from "./server";
 import NormalisedURLDomain from "supertokens-node/lib/build/normalisedURLDomain";
 import NormalisedURLPath from "supertokens-node/lib/build/normalisedURLPath";
-
 import OpenID from "supertokens-node/recipe/openid";
+import OAuth2Provider from "supertokens-node/recipe/oauth2provider";
+
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
+import { randomUUID } from "node:crypto";
+import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
 
 export type MCPPluginConfig = {
   mcpServers: SuperTokensMcpServer[];
 };
 
+type handlerType = PluginRouteHandler["handler"];
+
+const verifySessionForMCP = (next: handlerType): handlerType => {
+  return async (req, res, session, userContext) => {
+    let jwt: string | undefined = undefined;
+    if (req.getHeaderValue("authorization")) {
+      jwt = req.getHeaderValue("authorization")?.split("Bearer ")[1];
+    }
+    if (jwt === undefined) {
+      res.setStatusCode(401);
+      res.sendJSONResponse({ error: "No JWT found in the request" });
+      return null;
+    }
+
+    const { payload } = await OAuth2Provider.validateOAuth2AccessToken(jwt);
+
+    const authInfo: AuthInfo = {
+      token: jwt,
+      scopes: payload.scope as string[],
+      clientId: payload.clientId as string,
+      extra: payload,
+      expiresAt: payload.exp as number,
+    };
+
+    req.original.auth = authInfo;
+
+    return await next(req, res, session, userContext);
+  };
+};
+
 const createHandlersForMcp: (
   server: SuperTokensMcpServer
-) => PluginRouteHandler[] = (_server) => {
-  return [];
+) => PluginRouteHandler[] = (server) => {
+  const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
+
+  const getAndDeleteHandler: handlerType = async (req, res) => {
+    const sessionId = req.getHeaderValue("mcp-session-id");
+    if (!sessionId || !transports[sessionId]) {
+      res.setStatusCode(400);
+      res.sendJSONResponse({
+        status: "ERROR",
+        message: "Invalid or missing session ID",
+      });
+      return null;
+    }
+
+    const transport = transports[sessionId];
+    await transport.handleRequest(req.original, res.original);
+    return null;
+  };
+
+  const handlers: PluginRouteHandler[] = [];
+  handlers.push({
+    path: server.path,
+    method: "get",
+    verifySessionOptions: { sessionRequired: false },
+    handler: verifySessionForMCP(getAndDeleteHandler),
+  });
+
+  handlers.push({
+    path: server.path,
+    method: "delete",
+    verifySessionOptions: { sessionRequired: false },
+    handler: verifySessionForMCP(getAndDeleteHandler),
+  });
+
+  handlers.push({
+    path: server.path,
+    method: "post",
+    verifySessionOptions: { sessionRequired: false },
+    handler: verifySessionForMCP(async (req, res) => {
+      const sessionId = req.getHeaderValue("mcp-session-id");
+
+      let transport: StreamableHTTPServerTransport;
+
+      if (sessionId && transports[sessionId]) {
+        transport = transports[sessionId];
+      } else if (!sessionId && isInitializeRequest(await req.getJSONBody())) {
+        transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => randomUUID(),
+          onsessioninitialized: (sessionId) => {
+            transports[sessionId] = transport;
+          },
+        });
+
+        // Clean up transport when closed
+        transport.onclose = () => {
+          if (transport.sessionId) {
+            delete transports[transport.sessionId];
+          }
+        };
+
+        await server.connect(transport);
+      } else {
+        res.setStatusCode(400);
+        res.sendJSONResponse({
+          jsonrpc: "2.0",
+          error: {
+            code: -32000,
+            message: "Bad Request: No valid session ID provided",
+          },
+          id: null,
+        });
+        return null;
+      }
+
+      await transport.handleRequest(
+        req.original,
+        res.original,
+        await req.getJSONBody()
+      );
+
+      return null;
+    }),
+  });
+
+  return handlers;
 };
 
 export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
