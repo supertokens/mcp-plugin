@@ -1,4 +1,8 @@
-import { PluginRouteHandler, SuperTokensPlugin } from "supertokens-node/types";
+import {
+  JSONObject,
+  PluginRouteHandler,
+  SuperTokensPlugin,
+} from "supertokens-node/types";
 import SuperTokensMcpServer from "./server";
 import NormalisedURLDomain from "supertokens-node/lib/build/normalisedURLDomain";
 import NormalisedURLPath from "supertokens-node/lib/build/normalisedURLPath";
@@ -9,6 +13,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { randomUUID } from "node:crypto";
 import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
+import { RecipeUserId } from "supertokens-node";
 
 export type MCPPluginConfig = {
   mcpServers: SuperTokensMcpServer[];
@@ -16,7 +21,10 @@ export type MCPPluginConfig = {
 
 type handlerType = PluginRouteHandler["handler"];
 
-const verifySessionForMCP = (next: handlerType): handlerType => {
+const verifySessionForMCP = (
+  server: SuperTokensMcpServer,
+  next: handlerType
+): handlerType => {
   return async (req, res, session, userContext) => {
     let jwt: string | undefined = undefined;
     if (req.getHeaderValue("authorization")) {
@@ -28,7 +36,54 @@ const verifySessionForMCP = (next: handlerType): handlerType => {
       return null;
     }
 
-    const { payload } = await OAuth2Provider.validateOAuth2AccessToken(jwt);
+    let payload: JSONObject = {};
+
+    try {
+      payload = (await OAuth2Provider.validateOAuth2AccessToken(jwt)).payload;
+    } catch (err) {
+      if ("code" in (err as any) && (err as any).code === "ERR_JWT_EXPIRED") {
+        res.setStatusCode(401);
+        res.sendJSONResponse({ error: "Token expired" });
+        return null;
+      }
+      throw err;
+    }
+
+    if (server.validateTokenPayload !== undefined) {
+      const result = await server.validateTokenPayload(payload, userContext);
+      if (result.status === "ERROR") {
+        res.setStatusCode(401);
+        res.sendJSONResponse({ error: result.message });
+        return null;
+      }
+    }
+
+    if (server.claimValidators !== undefined) {
+      for (const validator of server.claimValidators) {
+        if ("claim" in validator) {
+          const claim = validator.claim;
+          const claimValue = await claim.fetchValue(
+            payload.sub as string,
+            new RecipeUserId(payload.rsub as string),
+            payload.tId as string,
+            payload,
+            userContext
+          );
+          payload = claim.addToPayload_internal(
+            payload,
+            claimValue,
+            userContext
+          );
+        }
+
+        const result = await validator.validate(payload, userContext);
+        if (!result.isValid) {
+          res.setStatusCode(401);
+          res.sendJSONResponse({ error: result.reason });
+          return null;
+        }
+      }
+    }
 
     const authInfo: AuthInfo = {
       token: jwt,
@@ -70,21 +125,21 @@ const createHandlersForMcp: (
     path: server.path,
     method: "get",
     verifySessionOptions: { sessionRequired: false },
-    handler: verifySessionForMCP(getAndDeleteHandler),
+    handler: verifySessionForMCP(server, getAndDeleteHandler),
   });
 
   handlers.push({
     path: server.path,
     method: "delete",
     verifySessionOptions: { sessionRequired: false },
-    handler: verifySessionForMCP(getAndDeleteHandler),
+    handler: verifySessionForMCP(server, getAndDeleteHandler),
   });
 
   handlers.push({
     path: server.path,
     method: "post",
     verifySessionOptions: { sessionRequired: false },
-    handler: verifySessionForMCP(async (req, res) => {
+    handler: verifySessionForMCP(server, async (req, res) => {
       const sessionId = req.getHeaderValue("mcp-session-id");
 
       let transport: StreamableHTTPServerTransport;

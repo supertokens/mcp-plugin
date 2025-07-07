@@ -2,7 +2,7 @@ import EmailPassword from "supertokens-node/recipe/emailpassword";
 import ThirdParty from "supertokens-node/recipe/thirdparty";
 import Session from "supertokens-node/recipe/session";
 import Dashboard from "supertokens-node/recipe/dashboard";
-import UserRoles from "supertokens-node/recipe/userroles";
+import UserRoles, { UserRoleClaim } from "supertokens-node/recipe/userroles";
 import OAuth2Provider from "supertokens-node/recipe/oauth2provider";
 import OpenID from "supertokens-node/recipe/openid";
 import type { TypeInput } from "supertokens-node/types";
@@ -14,11 +14,12 @@ const server = new SuperTokensMcpServer({
   name: "my-mcp",
   version: "1.0.0",
   path: "/mcp",
-  validateToken: async (_accessTokenPayload, _userContext) => {
+  validateTokenPayload: async (_accessTokenPayload, _userContext) => {
     return {
       status: "OK",
     };
   },
+  claimValidators: [UserRoleClaim.validators.includes("admin")],
 });
 
 server.registerTool(
@@ -29,14 +30,16 @@ server.registerTool(
   },
   async (_args, extra) => {
     return {
-      content: [{
-        type: "text",
-        text: JSON.stringify(extra.authInfo),
-      }],
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(extra.authInfo),
+        },
+      ],
       structuredContent: extra.authInfo as any,
-    }
+    };
   }
-)
+);
 
 export function getApiDomain() {
   const apiPort = 3001;
@@ -121,7 +124,9 @@ export const SuperTokensConfig: TypeInput = {
         ],
       },
     }),
-    Dashboard.init(),
+    Dashboard.init({
+      apiKey: "test",
+    }),
     UserRoles.init(),
     Session.init(),
     OpenID.init(),
@@ -130,10 +135,8 @@ export const SuperTokensConfig: TypeInput = {
   experimental: {
     plugins: [
       createPlugin({
-        mcpServers: [
-          server
-        ]
-      })
-    ]
-  }
+        mcpServers: [server],
+      }),
+    ],
+  },
 };
