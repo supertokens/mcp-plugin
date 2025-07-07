@@ -4,11 +4,11 @@ import Session from "supertokens-node/recipe/session";
 import Dashboard from "supertokens-node/recipe/dashboard";
 import UserRoles, { UserRoleClaim } from "supertokens-node/recipe/userroles";
 import OAuth2Provider from "supertokens-node/recipe/oauth2provider";
-import OpenID from "supertokens-node/recipe/openid";
 import type { TypeInput } from "supertokens-node/types";
 import { z } from "zod";
 
 import { SuperTokensMcpServer, createPlugin } from "supertokens-mcp-plugin";
+import SuperTokens from "supertokens-node";
 
 const server = new SuperTokensMcpServer({
   name: "my-mcp",
@@ -23,10 +23,10 @@ const server = new SuperTokensMcpServer({
 });
 
 server.registerTool(
-  "who-am-i",
+  "session-info",
   {
     inputSchema: {},
-    description: "Get information about the current user (who am I)",
+    description: "Get session information",
   },
   async (_args, extra) => {
     return {
@@ -37,6 +37,49 @@ server.registerTool(
         },
       ],
       structuredContent: extra.authInfo as any,
+    };
+  }
+);
+
+server.registerTool(
+  "my-email",
+  {
+    description: "Get the email of the current user",
+    inputSchema: {},
+    title: "My Email",
+  },
+  async (_args, extra) => {
+    const userId = extra.authInfo?.extra?.sub as string;
+    const user = await SuperTokens.getUser(userId);
+    return {
+      content: [
+        { type: "text", text: JSON.stringify({ emails: user?.emails }) },
+      ],
+      structuredContent: {
+        emails: user?.emails,
+      },
+    };
+  }
+);
+
+server.registerTool(
+  "add-two-numbers",
+  {
+    title: "Add Two Numbers",
+    description: "Add two numbers together",
+    inputSchema: {
+      a: z.number(),
+      b: z.number(),
+    },
+  },
+  async (args) => {
+    return {
+      content: [
+        { type: "text", text: JSON.stringify({ result: args.a + args.b }) },
+      ],
+      structuredContent: {
+        result: args.a + args.b,
+      },
     };
   }
 );
@@ -129,7 +172,6 @@ export const SuperTokensConfig: TypeInput = {
     }),
     UserRoles.init(),
     Session.init(),
-    OpenID.init(),
     OAuth2Provider.init(),
   ],
   experimental: {
