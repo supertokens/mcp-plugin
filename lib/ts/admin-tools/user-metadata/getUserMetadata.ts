@@ -25,12 +25,12 @@ async function getUserHandler({ userId }: GetUserMetadataParameters) {
 }
 
 export const GetUserMetadataTool: Tool = {
-  name: "get_user",
+  name: "get_user_metadata",
   annotations: {
-    title: "Get user",
+    title: "Get user metadata",
   },
   description: `
-  Retrieves the details of a user from your SuperTokens integration.
+  Retrieves the user metadata for a a user.
 
   ## Input:
   - userId: 

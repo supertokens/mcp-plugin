@@ -3,7 +3,7 @@ import { z } from "zod";
 export const ToolContextSchema = z.object({
   appInfo: z.object({
     appName: z.string().min(1),
-    apiDomain: z.string().url().optional(),
+    apiDomain: z.string().url(),
     websiteDomain: z.string().url().optional(),
     apiBasePath: z.string().optional().default("/auth"),
     websiteBasePath: z.string().optional().default("/auth"),
