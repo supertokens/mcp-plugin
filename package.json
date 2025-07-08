@@ -57,5 +57,8 @@
   },
   "browser": {
     "fs": false
+  },
+  "dependencies": {
+    "debug": "^4.4.1"
   }
 }

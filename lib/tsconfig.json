@@ -16,7 +16,11 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "lib": ["ES2022"],
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["ts/*"]
+    }
   },
   "include": ["ts/**/*"],
   "exclude": ["build"],

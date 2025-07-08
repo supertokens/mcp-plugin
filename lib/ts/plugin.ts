@@ -14,6 +14,8 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { randomUUID } from "node:crypto";
 import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
 import { RecipeUserId } from "supertokens-node";
+import { PLUGIN_ID, PLUGIN_VERSION, setToolContext } from "./common/config";
+import { enableDebugLogs } from "./common/logger";
 
 export type MCPPluginConfig = {
   mcpServers: SuperTokensMcpServer[];
@@ -190,8 +192,8 @@ const createHandlersForMcp: (
 
 export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
   return {
-    id: "st-mcp",
-    version: "1.0.0",
+    id: PLUGIN_ID,
+    version: PLUGIN_VERSION,
     compatibleSDKVersions: ["23.0.0"],
     overrideMap: {
       oauth2provider: {
@@ -200,8 +202,36 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
       openid: {
         recipeInitRequired: true,
       },
+      userroles: {
+        recipeInitRequired: true,
+      },
+      usermetadata: {},
+      multitenancy: {},
     },
+    init: (config) => {
+      if (config.debug) {
+        enableDebugLogs();
+      }
 
+      if (!config.supertokens) {
+        throw new Error("SuperTokens configuration is required");
+      }
+
+      setToolContext({
+        appInfo: {
+          appName: config.appInfo.appName,
+          apiDomain: config.appInfo.apiDomain,
+          websiteDomain: config.appInfo.websiteDomain,
+          apiBasePath: config.appInfo.apiBasePath || "/auth",
+          websiteBasePath: config.appInfo.websiteBasePath || "/auth",
+          apiGatewayPath: config.appInfo.apiGatewayPath,
+        },
+        supertokens: {
+          connectionURI: config.supertokens.connectionURI,
+          apiKey: config.supertokens.apiKey,
+        },
+      });
+    },
     routeHandlers: (config) => {
       const routeHandlers: PluginRouteHandler[] = [];
 
