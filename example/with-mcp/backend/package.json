@@ -13,7 +13,8 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "supertokens-mcp-plugin": "file:../../..",
+    "supertokens-mcp-plugin": "file:../../../lib/build",
+    "supertokens-node": "github:supertokens/supertokens-node#23.0",
     "typescript": "^4.7.2"
   },
   "devDependencies": {
