@@ -1,15 +1,12 @@
 import EmailPassword from "supertokens-node/recipe/emailpassword";
 import ThirdParty from "supertokens-node/recipe/thirdparty";
-import type { ProviderInput } from "supertokens-node/recipe/thirdparty/types";
 import Session from "supertokens-node/recipe/session";
 import Dashboard from "supertokens-node/recipe/dashboard";
 import UserRoles, { UserRoleClaim } from "supertokens-node/recipe/userroles";
 import OAuth2Provider from "supertokens-node/recipe/oauth2provider";
 import type { TypeInput } from "supertokens-node/types";
-import SuperTokens from "supertokens-node";
-import {
+import SuperTokensMcpPlugin, {
   SuperTokensAdminMcpServer,
-  createPlugin,
 } from "supertokens-mcp-plugin";
 
 const adminMcpServer = new SuperTokensAdminMcpServer({
@@ -110,7 +107,7 @@ export const SuperTokensConfig: TypeInput = {
   ],
   experimental: {
     plugins: [
-      createPlugin({
+      SuperTokensMcpPlugin.init({
         mcpServers: [adminMcpServer],
       }),
     ],
