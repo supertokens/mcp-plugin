@@ -7,7 +7,9 @@ import OAuth2Provider from "supertokens-node/recipe/oauth2provider";
 import type { TypeInput } from "supertokens-node/types";
 import { z } from "zod";
 
-import { SuperTokensMcpServer, createPlugin } from "supertokens-mcp-plugin";
+import SuperTokensMcpPlugin, {
+  SuperTokensMcpServer,
+} from "supertokens-mcp-plugin";
 import SuperTokens from "supertokens-node";
 
 const server = new SuperTokensMcpServer({
@@ -176,7 +178,7 @@ export const SuperTokensConfig: TypeInput = {
   ],
   experimental: {
     plugins: [
-      createPlugin({
+      SuperTokensMcpPlugin.init({
         mcpServers: [server],
       }),
     ],
