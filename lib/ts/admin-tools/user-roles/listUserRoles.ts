@@ -1,8 +1,8 @@
 import { z } from "zod";
 import UserRoles from "supertokens-node/recipe/userroles";
-import { Tool } from "@/common/types";
-import { TenantIdSchema } from "@/common/schemas";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { TenantIdSchema } from "../../common/schemas";
+import { MCPServerError } from "../../common/error";
 
 const ListUserRolesParametersSchema = z.object({
   userId: z

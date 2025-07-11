@@ -1,4 +1,4 @@
-import { Tool } from "@/common/types";
+import { Tool } from "../common/types";
 export declare const Tools: Tool[];
 export declare function callTool(
   tool: Tool,

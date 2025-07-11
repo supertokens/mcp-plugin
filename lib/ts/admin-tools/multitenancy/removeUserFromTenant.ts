@@ -1,9 +1,9 @@
 import { z } from "zod";
 import Multitenancy from "supertokens-node/recipe/multitenancy";
 import supertokens from "supertokens-node";
-import { Tool } from "@/common/types";
-import { TenantIdSchema } from "@/common/schemas";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { TenantIdSchema } from "../../common/schemas";
+import { MCPServerError } from "../../common/error";
 
 const RemoveUserFromTenantParametersSchema = z.object({
   userId: z

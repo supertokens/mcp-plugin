@@ -1,8 +1,8 @@
 import { z } from "zod";
 import supertokens from "supertokens-node";
-import { Tool } from "@/common/types";
-import { TenantIdSchema } from "@/common/schemas";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { TenantIdSchema } from "../../common/schemas";
+import { MCPServerError } from "../../common/error";
 import { User } from "supertokens-node/lib/build/types";
 
 const GetUserParametersSchema = z

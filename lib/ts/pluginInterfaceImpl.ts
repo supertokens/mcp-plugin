@@ -54,6 +54,7 @@ export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface {
       const scopes = pluginConfig?.oauth?.supportedScopes ?? [
         "openid",
         "email",
+        "offline_access",
       ];
 
       return {
@@ -70,6 +71,7 @@ export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface {
       supertokensInfo: SuperTokensInfo,
       client: Record<string, any>
     ) {
+      console.log("registerOAuthClient:client", client);
       if (pluginConfig?.oauth?.cacheClients ?? true) {
         // TODO: find existing client that can handle this
       }
@@ -89,6 +91,7 @@ export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface {
       );
 
       const data: any = await response.json();
+      console.log("registerOAuthClient:response", data);
       return {
         client_id: data.clientId,
         client_secret: data.clientSecret,

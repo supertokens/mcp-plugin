@@ -1,8 +1,8 @@
 import { z } from "zod";
 import supertokens from "supertokens-node";
 import Passwordless from "supertokens-node/recipe/passwordless";
-import { Tool } from "@/common/types";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { MCPServerError } from "../../common/error";
 
 const UpdateUserPasswordlessDataParametersSchema = z
   .object({

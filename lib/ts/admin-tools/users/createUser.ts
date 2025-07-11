@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ToolContext, Tool } from "@/common/types";
-import { MCPServerError } from "@/common/error";
+import { ToolContext, Tool } from "../../common/types";
+import { MCPServerError } from "../../common/error";
 
 const UserRoleSchema = z
   .object({

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import Multitenancy from "supertokens-node/recipe/multitenancy";
-import { Tool } from "@/common/types";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { MCPServerError } from "../../common/error";
 
 const DeleteTenantParametersSchema = z.object({
   tenantId: z.string().min(1).describe("The ID of the tenant to delete"),

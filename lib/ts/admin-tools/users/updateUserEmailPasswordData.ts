@@ -1,8 +1,8 @@
 import { z } from "zod";
 import supertokens from "supertokens-node";
 import EmailPassword from "supertokens-node/recipe/emailpassword";
-import { Tool } from "@/common/types";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { MCPServerError } from "../../common/error";
 
 const UpdateUserEmailPasswordDataParametersSchema = z
   .object({

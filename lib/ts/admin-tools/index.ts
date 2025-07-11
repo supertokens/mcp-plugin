@@ -1,5 +1,5 @@
-import { Tool } from "@/common/types";
-import { logDebugMessage } from "@/common/logger";
+import { Tool } from "../common/types";
+import { logDebugMessage } from "../common/logger";
 
 import { ReadDocumentationTool } from "./documentation/readDocumentation";
 import { SearchDocumentationTool } from "./documentation/searchDocumentation";
@@ -27,8 +27,8 @@ import { CreateUserTool } from "./users/createUser";
 import { DeleteUserTool } from "./users/deleteUser";
 import { UpdateUserMetadataTool } from "./user-metadata/updateUserMetadata";
 import { GetUserMetadataTool } from "./user-metadata/getUserMetadata";
-import { getMessageFromError, isRecipeAvailable } from "@/common/error";
-import { getToolContext } from "@/common/config";
+import { getMessageFromError, isRecipeAvailable } from "../common/error";
+import { getToolContext } from "../common/config";
 
 export const Tools: Tool[] = [
   // Documentation

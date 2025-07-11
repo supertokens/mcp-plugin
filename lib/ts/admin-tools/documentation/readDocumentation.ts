@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Tool } from "@/common/types";
-import { logDebugMessage } from "@/common/logger";
-import { MCPServerError } from "@/common/error";
+import { logDebugMessage } from "../../common/logger";
+import { MCPServerError } from "../../common/error";
 
 const ReadDocumentationParametersSchema = z.object({
   url: z

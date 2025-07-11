@@ -1,8 +1,8 @@
 import { z } from "zod";
 import supertokens from "supertokens-node";
 import UserMetadata from "supertokens-node/recipe/usermetadata";
-import { Tool } from "@/common/types";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { MCPServerError } from "../../common/error";
 
 const UpdateUserMetadataParametersSchema = z.object({
   userId: z

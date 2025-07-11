@@ -1,7 +1,7 @@
 import { z } from "zod";
 import UserRoles from "supertokens-node/recipe/userroles";
-import { Tool } from "@/common/types";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { MCPServerError } from "../../common/error";
 
 const DeleteUserRoleParametersSchema = z.object({
   role: z.string().min(1).describe("The name of the role to delete"),

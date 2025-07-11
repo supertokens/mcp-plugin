@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { Tool } from "@/common/types";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { MCPServerError } from "../../common/error";
 
 const SearchDocumentationParametersSchema = z.object({
   searchPhrase: z.string().describe(`The search phrase to use.`),

@@ -1,8 +1,11 @@
 import { z } from "zod";
 import Multitenancy from "supertokens-node/recipe/multitenancy";
-import { Tool } from "@/common/types";
-import { AuthenticationFactorSchema, CoreConfigSchema } from "@/common/schemas";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import {
+  AuthenticationFactorSchema,
+  CoreConfigSchema,
+} from "../../common/schemas";
+import { MCPServerError } from "../../common/error";
 
 const CreateTenantParametersSchema = z.object({
   tenantId: z.string().min(1).describe("The ID of the tenant to create"),

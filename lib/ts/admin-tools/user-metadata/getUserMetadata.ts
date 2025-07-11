@@ -1,7 +1,7 @@
 import { z } from "zod";
 import UserMetadata from "supertokens-node/recipe/usermetadata";
-import { Tool } from "@/common/types";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { MCPServerError } from "../../common/error";
 
 const GetUserMetadataParametersSchema = z.object({
   userId: z.string().describe("The user ID used to identify the user"),

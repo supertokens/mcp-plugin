@@ -1,7 +1,7 @@
 import { z } from "zod";
 import supertokens from "supertokens-node";
-import { Tool } from "@/common/types";
-import { TenantIdSchema } from "@/common/schemas";
+import { Tool } from "../../common/types";
+import { TenantIdSchema } from "../../common/schemas";
 
 const ListUsersParametersSchema = z.object({
   tenantId: TenantIdSchema,

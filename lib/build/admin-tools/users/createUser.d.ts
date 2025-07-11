@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Tool } from "@/common/types";
+import { Tool } from "../../common/types";
 export declare const CreateUserParametersSchema: z.ZodObject<
   {
     externalUserId: z.ZodOptional<z.ZodString>;

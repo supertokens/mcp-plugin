@@ -1,8 +1,8 @@
 import { z } from "zod";
 import UserRoles from "supertokens-node/recipe/userroles";
-import { Tool } from "@/common/types";
-import { TenantIdSchema } from "@/common/schemas";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { TenantIdSchema } from "../../common/schemas";
+import { MCPServerError } from "../../common/error";
 
 const ListUsersByRoleParametersSchema = z.object({
   role: z.string().describe("The role that will be used to filter the users"),

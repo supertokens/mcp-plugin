@@ -1,8 +1,8 @@
 import { z } from "zod";
 import Multitenancy from "supertokens-node/recipe/multitenancy";
-import { Tool } from "@/common/types";
-import { TenantIdSchema } from "@/common/schemas";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { TenantIdSchema } from "../../common/schemas";
+import { MCPServerError } from "../../common/error";
 
 const GetTenantParametersSchema = z.object({
   tenantId: TenantIdSchema,

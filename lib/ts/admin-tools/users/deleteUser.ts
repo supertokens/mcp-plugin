@@ -1,7 +1,7 @@
 import { z } from "zod";
 import supertokens from "supertokens-node";
-import { Tool } from "@/common/types";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { MCPServerError } from "../../common/error";
 
 const DeleteUserParametersSchema = z.object({
   userId: z.string().describe("The ID of the user to delete"),

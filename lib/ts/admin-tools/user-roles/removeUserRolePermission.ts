@@ -1,7 +1,7 @@
 import { z } from "zod";
 import UserRoles from "supertokens-node/recipe/userroles";
-import { Tool } from "@/common/types";
-import { MCPServerError } from "@/common/error";
+import { Tool } from "../../common/types";
+import { MCPServerError } from "../../common/error";
 
 const RemoveUserRolePermissionParametersSchema = z.object({
   role: z
