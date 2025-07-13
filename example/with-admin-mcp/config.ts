@@ -4,6 +4,7 @@ import Session from "supertokens-node/recipe/session";
 import Dashboard from "supertokens-node/recipe/dashboard";
 import UserRoles, { UserRoleClaim } from "supertokens-node/recipe/userroles";
 import OAuth2Provider from "supertokens-node/recipe/oauth2provider";
+import OpenID from "supertokens-node/recipe/openid";
 import type { TypeInput } from "supertokens-node/types";
 import SuperTokensMcpPlugin, {
   SuperTokensAdminMcpServer,
@@ -104,6 +105,7 @@ export const SuperTokensConfig: TypeInput = {
     UserRoles.init(),
     Session.init(),
     OAuth2Provider.init(),
+    OpenID.init(),
   ],
   experimental: {
     plugins: [
@@ -113,4 +115,3 @@ export const SuperTokensConfig: TypeInput = {
     ],
   },
 };
-
