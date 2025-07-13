@@ -37,6 +37,19 @@ Examples:
   - https://supertokens.com/docs/additional-verification/email-verification/initial-setup
   - https://supertokens.com/docs/authentication/passwordless/initial-setup 
 `),
+  offset: z
+    .number()
+    .optional()
+    .default(0)
+    .describe(
+      "The offset (number of characters) to start reading from. Optional argument. If not provided, the server will read from the beginning of the page"
+    ),
+  length: z
+    .number()
+    .optional()
+    .describe(
+      "The number of characters that should be read. Optional argument. If not provided, the entire page will be read"
+    ),
 });
 
 type ReadDocumentationParameters = z.infer<
@@ -66,10 +79,15 @@ export const ReadDocumentationTool: Tool = {
   },
   description: `
   Retrieves the content of a SuperTokens documentation page and converts it to markdown format.
+  If the document is too long use the offset and length parameters to read only a portion of it. 
 
   ## Input:
   - url:
   ${ReadDocumentationParametersSchema.shape.url.description}
+  - offset:
+  ${ReadDocumentationParametersSchema.shape.offset.description}
+  - length:
+  ${ReadDocumentationParametersSchema.shape.length.description}
 
   ## Return Value:
   Markdown content of the SuperTokens documentation

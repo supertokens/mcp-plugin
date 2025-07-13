@@ -27,7 +27,12 @@ async function searchDocumentationHandler({
   }
 
   const responseBody = (await response.json()) as {
-    data: { url: string; pageTitle: string; matchedContent: string }[];
+    data: {
+      url: string;
+      pageTitle: string;
+      matchedContent: string;
+      metadata: Record<string, unknown>;
+    }[];
   };
   return { results: responseBody.data };
 }
@@ -43,7 +48,6 @@ export const SearchDocumentationTool: Tool = {
   Select an item from the returned list and use the "read_documentation" tool to access the documentation page.
 
   ## Search Tips
-
   - Use specific technical terms rather than general phrases
   - Include recipe names to narrow results (e.g., "emailpassword", "passwordless", "thirdparty", "multitenancy")
 
@@ -56,6 +60,7 @@ export const SearchDocumentationTool: Tool = {
   - url: The documentation page URL
   - pageTitle: The page title
   - matchedContent: The content that was matched
+  - metadata: Information about that particular page (the recipe that it belongs to, the page type, etc.)
   `,
   input: SearchDocumentationParametersSchema,
   handler: searchDocumentationHandler,
