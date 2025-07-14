@@ -1,21 +1,15 @@
 import { Tool } from "../common/types";
 export declare const Tools: Tool[];
-export declare function callTool(
-  tool: Tool,
-  args: any
-): Promise<
-  | {
-      isError: boolean;
-      content: {
+export declare function callTool(tool: Tool, args: any): Promise<{
+    isError: boolean;
+    content: {
         type: "text";
         text: string;
-      }[];
-    }
-  | {
-      content: {
+    }[];
+} | {
+    content: {
         type: "text";
         text: string;
-      }[];
-      isError?: undefined;
-    }
->;
+    }[];
+    isError?: undefined;
+}>;
