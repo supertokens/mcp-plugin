@@ -117,6 +117,18 @@ export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface {
       client: Record<string, any>,
       userContext: UserContext
     ) {
+      const grantTypes: string[] | undefined =
+        client.grant_types || client.grantTypes;
+      if (grantTypes && grantTypes.includes("client_credentials")) {
+        // we do not want to support creation of M2M clients so that the user
+        // is not billed for the usage.
+        return {
+          status: "ERROR",
+          error: "client_credentials grant type is not supported",
+          errorDescription: "client_credentials grant type is not supported",
+        };
+      }
+
       let response = await OAuth2Provider.createOAuth2Client(
         client,
         userContext
@@ -173,6 +185,18 @@ export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface {
       clientUpdate: Record<string, any>,
       userContext: UserContext
     ) {
+      const grantTypes: string[] | undefined =
+        clientUpdate.grant_types || clientUpdate.grantTypes;
+      if (grantTypes && grantTypes.includes("client_credentials")) {
+        // we do not want to support updating to M2M clients so that the user
+        // is not billed for the usage.
+        return {
+          status: "ERROR",
+          error: "client_credentials grant type is not supported",
+          errorDescription: "client_credentials grant type is not supported",
+        };
+      }
+
       const response = await OAuth2Provider.updateOAuth2Client(
         { clientId, ...clientUpdate },
         userContext

@@ -27,6 +27,7 @@ export type MCPPluginInterface = {
     appInfo: AppInfo,
     userContext: UserContext
   ): Promise<Record<string, any>>;
+
   registerOAuthClient(
     appInfo: AppInfo,
     client: Record<string, any>,
