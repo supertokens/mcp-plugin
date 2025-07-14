@@ -75,9 +75,10 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
         verifySessionOptions: {
           sessionRequired: false,
         },
-        handler: async (_req, res) => {
+        handler: async (_req, res, _session, userContext) => {
           let resp = await pluginInterface.wellKnownOAuthAuthorizationServer(
-            config.appInfo
+            config.appInfo,
+            userContext
           );
           await res.sendJSONResponse(resp);
           return null;
@@ -88,9 +89,10 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
         path: "/.well-known/oauth-protected-resource",
         method: "get",
         verifySessionOptions: { sessionRequired: false },
-        handler: async (_req, res) => {
+        handler: async (_req, res, _session, userContext) => {
           let resp = await pluginInterface.wellKnownOAuthProtectedResource(
-            config.appInfo
+            config.appInfo,
+            userContext
           );
           res.sendJSONResponse(resp);
           return null;
@@ -99,25 +101,122 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
 
       routeHandlers.push({
         path: new NormalisedURLPath(
-          `${pluginInterface.getAuthBaseUrl(config.appInfo)}/oauth/register`
+          `${pluginInterface.getRegistrationEndpoint(
+            config.appInfo,
+            {} as any
+          )}`
         ).getAsStringDangerous(),
         method: "post",
         verifySessionOptions: { sessionRequired: false },
-        handler: async (req, res) => {
-          try {
-            const response = await pluginInterface.registerOAuthClient(
-              config.appInfo,
-              config.supertokens!,
-              await req.getBodyAsJSONOrFormData()
-            );
+        handler: async (req, res, _session, userContext) => {
+          const response = await pluginInterface.registerOAuthClient(
+            config.appInfo,
+            await req.getBodyAsJSONOrFormData(),
+            userContext
+          );
+          if (response.status === "OK") {
             res.setStatusCode(201);
             res.sendJSONResponse(response);
-          } catch (err) {
-            res.setStatusCode(500);
+          } else {
+            res.setStatusCode(400);
+            res.sendJSONResponse(response);
+          }
+          return null;
+        },
+      });
+
+      routeHandlers.push({
+        path: new NormalisedURLPath(
+          `${pluginInterface.getClientsEndpoint(config.appInfo, {} as any)}`
+        ).getAsStringDangerous(),
+        method: "get",
+        verifySessionOptions: { sessionRequired: false },
+        handler: async (req, res, _session, userContext) => {
+          const clientId = req.getKeyValueFromQuery("client_id");
+          if (clientId === undefined) {
+            res.setStatusCode(400);
             res.sendJSONResponse({
-              error: "Failed to register OAuth client",
-              details: err instanceof Error ? err.message : `${err}`,
+              status: "ERROR",
+              error: "client_id is required",
+              errorDescription: "client_id is required",
             });
+            return null;
+          }
+          const response = await pluginInterface.getOAuthClient(
+            clientId,
+            userContext
+          );
+          if (response.status === "OK") {
+            res.setStatusCode(200);
+            res.sendJSONResponse(response);
+          } else {
+            res.setStatusCode(400);
+            res.sendJSONResponse(response);
+          }
+          return null;
+        },
+      });
+
+      routeHandlers.push({
+        path: new NormalisedURLPath(
+          `${pluginInterface.getClientsEndpoint(config.appInfo, {} as any)}`
+        ).getAsStringDangerous(),
+        method: "put",
+        verifySessionOptions: { sessionRequired: false },
+        handler: async (req, res, _session, userContext) => {
+          const clientId = req.getKeyValueFromQuery("client_id");
+          if (clientId === undefined) {
+            res.setStatusCode(400);
+            res.sendJSONResponse({
+              status: "ERROR",
+              error: "client_id is required",
+              errorDescription: "client_id is required",
+            });
+            return null;
+          }
+          const response = await pluginInterface.updateOAuthClient(
+            clientId,
+            await req.getBodyAsJSONOrFormData(),
+            userContext
+          );
+          if (response.status === "OK") {
+            res.setStatusCode(200);
+            res.sendJSONResponse(response);
+          } else {
+            res.setStatusCode(400);
+            res.sendJSONResponse(response);
+          }
+          return null;
+        },
+      });
+
+      routeHandlers.push({
+        path: new NormalisedURLPath(
+          `${pluginInterface.getClientsEndpoint(config.appInfo, {} as any)}`
+        ).getAsStringDangerous(),
+        method: "delete",
+        verifySessionOptions: { sessionRequired: false },
+        handler: async (req, res, _session, userContext) => {
+          const clientId = req.getKeyValueFromQuery("client_id");
+          if (clientId === undefined) {
+            res.setStatusCode(400);
+            res.sendJSONResponse({
+              status: "ERROR",
+              error: "client_id is required",
+              errorDescription: "client_id is required",
+            });
+            return null;
+          }
+          const response = await pluginInterface.deleteOAuth2Client(
+            clientId,
+            userContext
+          );
+          if (response.status === "OK") {
+            res.setStatusCode(200);
+            res.sendJSONResponse(response);
+          } else {
+            res.setStatusCode(400);
+            res.sendJSONResponse(response);
           }
           return null;
         },
