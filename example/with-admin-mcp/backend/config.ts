@@ -105,7 +105,6 @@ export const SuperTokensConfig: TypeInput = {
     UserRoles.init(),
     Session.init(),
     OAuth2Provider.init(),
-    OpenID.init(),
   ],
   experimental: {
     plugins: [

@@ -1,4 +1,6 @@
 import express from "express";
+
+import OpenID from "supertokens-node/recipe/openid";
 import cors from "cors";
 import supertokens from "supertokens-node";
 import { verifySession } from "supertokens-node/recipe/session/framework/express";
@@ -10,7 +12,6 @@ import {
 import { getWebsiteDomain, SuperTokensConfig } from "./config.js";
 import Multitenancy from "supertokens-node/recipe/multitenancy";
 
-console.log("called init");
 supertokens.init(SuperTokensConfig);
 
 const app = express();
@@ -41,6 +42,12 @@ app.get("/sessioninfo", verifySession(), async (req: SessionRequest, res) => {
     userId: session!.getUserId(),
     accessTokenPayload: session!.getAccessTokenPayload(),
   });
+});
+
+app.get("/openid", async (_req, res) => {
+  const oauthConfig = await OpenID.getOpenIdDiscoveryConfiguration();
+  console.log(oauthConfig);
+  return res.send(oauthConfig);
 });
 
 // This API is used by the frontend to create the tenants drop down when the app loads.
