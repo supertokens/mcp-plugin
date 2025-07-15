@@ -1,2 +1,6 @@
 import { MCPPluginConfig, MCPPluginInterface } from "./types";
-export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface;
+import { AppInfo } from "supertokens-node/types";
+export default function (
+  appInfo: AppInfo,
+  pluginConfig?: MCPPluginConfig
+): MCPPluginInterface;

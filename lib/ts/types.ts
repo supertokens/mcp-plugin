@@ -1,14 +1,8 @@
-import { AppInfo, UserContext } from "supertokens-node/types";
+import { UserContext } from "supertokens-node/types";
 import SuperTokensMcpServer from "./server";
 import OverrideableBuilder from "supertokens-js-override";
 
 export type MCPPluginInterface = {
-  getApiDomain(appInfo: AppInfo, userContext: UserContext): string;
-  getAuthBaseUrl(appInfo: AppInfo, userContext: UserContext): string;
-
-  getRegistrationEndpoint(appInfo: AppInfo, userContext: UserContext): string;
-  getClientsEndpoint(appInfo: AppInfo, userContext: UserContext): string;
-
   getRegistrationAccessTokenForClient(
     clientId: string,
     userContext: UserContext
@@ -20,16 +14,13 @@ export type MCPPluginInterface = {
   ): Promise<boolean>;
 
   wellKnownOAuthAuthorizationServer(
-    appInfo: AppInfo,
     userContext: UserContext
   ): Promise<Record<string, any>>;
   wellKnownOAuthProtectedResource(
-    appInfo: AppInfo,
     userContext: UserContext
   ): Promise<Record<string, any>>;
 
   registerOAuthClient(
-    appInfo: AppInfo,
     client: Record<string, any>,
     userContext: UserContext
   ): Promise<
@@ -83,6 +74,8 @@ export type MCPPluginInterface = {
 export type MCPPluginConfig = {
   mcpServers: SuperTokensMcpServer[];
   oauth?: {
+    registrationEndpoint?: string;
+    clientsEndpoint?: string;
     supportedScopes?: string[];
     registrationAccessTokenSalt?: string;
   };

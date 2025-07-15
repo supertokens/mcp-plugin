@@ -1,19 +1,24 @@
+import Session from "supertokens-node/recipe/session";
 import { PluginRouteHandler, SuperTokensPlugin } from "supertokens-node/types";
-import NormalisedURLPath from "supertokens-node/lib/build/normalisedURLPath";
 
 import OverrideableBuilder from "supertokens-js-override";
 
 import { PLUGIN_ID, PLUGIN_VERSION, setToolContext } from "./common/config";
 import { enableDebugLogs } from "./common/logger";
-import { MCPPluginConfig } from "./types";
+import { MCPPluginConfig, MCPPluginInterface } from "./types";
 import pluginInterfaceImpl from "./pluginInterfaceImpl";
+import { SessionClaim } from "supertokens-node/lib/build/recipe/session/types";
 
 export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
-  let pluginInterface = pluginInterfaceImpl(pluginConfig);
+  let pluginInterface: MCPPluginInterface;
 
-  if (pluginConfig?.override) {
-    const builder = new OverrideableBuilder(pluginInterface);
-    pluginInterface = builder.override(pluginConfig.override).build();
+  const claims: SessionClaim<any>[] = [];
+  for (const server of pluginConfig?.mcpServers ?? []) {
+    for (const claim of server.getClaims()) {
+      if (!claims.includes(claim)) {
+        claims.push(claim);
+      }
+    }
   }
 
   return {
@@ -23,6 +28,49 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
     overrideMap: {
       oauth2provider: {
         recipeInitRequired: true,
+        functions: (oI) => {
+          return {
+            ...oI,
+            buildAccessTokenPayload: async (input) => {
+              let payload = await oI.buildAccessTokenPayload(input);
+              console.log("buildAccessTokenPayload", payload);
+
+              if (input.sessionHandle === undefined) {
+                return payload;
+              }
+
+              const session = await Session.getSessionInformation(
+                input.sessionHandle,
+                input.userContext
+              );
+              if (session === undefined) {
+                return payload;
+              }
+
+              const userId = session.userId;
+              const recipeUserId = session.recipeUserId;
+              const tenantId = session.tenantId;
+
+              for (const claim of claims) {
+                const claimValue = await claim.fetchValue(
+                  userId,
+                  recipeUserId,
+                  tenantId,
+                  payload,
+                  input.userContext
+                );
+                payload = claim.addToPayload_internal(
+                  payload,
+                  claimValue,
+                  input.userContext
+                );
+              }
+
+              console.log("Final-buildAccessTokenPayload", payload);
+              return payload;
+            },
+          };
+        },
       },
       openid: {
         recipeInitRequired: true,
@@ -34,6 +82,12 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
       multitenancy: {},
     },
     init: (config) => {
+      pluginInterface = pluginInterfaceImpl(config.appInfo, pluginConfig);
+      if (pluginConfig?.override) {
+        const builder = new OverrideableBuilder(pluginInterface);
+        pluginInterface = builder.override(pluginConfig.override).build();
+      }
+
       if (config.debug) {
         enableDebugLogs();
       }
@@ -47,8 +101,8 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
           appName: config.appInfo.appName,
           apiDomain: config.appInfo.apiDomain,
           websiteDomain: config.appInfo.websiteDomain,
-          apiBasePath: config.appInfo.apiBasePath || "/auth",
-          websiteBasePath: config.appInfo.websiteBasePath || "/auth",
+          apiBasePath: config.appInfo.apiBasePath ?? "/auth",
+          websiteBasePath: config.appInfo.websiteBasePath ?? "/auth",
           apiGatewayPath: config.appInfo.apiGatewayPath,
         },
         supertokens: {
@@ -57,7 +111,7 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
         },
       });
     },
-    routeHandlers: (config) => {
+    routeHandlers: () => {
       const routeHandlers: PluginRouteHandler[] = [];
 
       if (pluginConfig?.mcpServers) {
@@ -77,7 +131,6 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
         },
         handler: async (_req, res, _session, userContext) => {
           let resp = await pluginInterface.wellKnownOAuthAuthorizationServer(
-            config.appInfo,
             userContext
           );
           await res.sendJSONResponse(resp);
@@ -91,7 +144,6 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
         verifySessionOptions: { sessionRequired: false },
         handler: async (_req, res, _session, userContext) => {
           let resp = await pluginInterface.wellKnownOAuthProtectedResource(
-            config.appInfo,
             userContext
           );
           res.sendJSONResponse(resp);
@@ -100,17 +152,11 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
       });
 
       routeHandlers.push({
-        path: new NormalisedURLPath(
-          `${pluginInterface.getRegistrationEndpoint(
-            config.appInfo,
-            {} as any
-          )}`
-        ).getAsStringDangerous(),
+        path: pluginConfig?.oauth?.registrationEndpoint ?? "/oauth/register",
         method: "post",
         verifySessionOptions: { sessionRequired: false },
         handler: async (req, res, _session, userContext) => {
           const response = await pluginInterface.registerOAuthClient(
-            config.appInfo,
             await req.getBodyAsJSONOrFormData(),
             userContext
           );
@@ -126,9 +172,7 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
       });
 
       routeHandlers.push({
-        path: new NormalisedURLPath(
-          `${pluginInterface.getClientsEndpoint(config.appInfo, {} as any)}`
-        ).getAsStringDangerous(),
+        path: pluginConfig?.oauth?.clientsEndpoint ?? "/oauth/clients",
         method: "get",
         verifySessionOptions: { sessionRequired: false },
         handler: async (req, res, _session, userContext) => {
@@ -158,9 +202,7 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
       });
 
       routeHandlers.push({
-        path: new NormalisedURLPath(
-          `${pluginInterface.getClientsEndpoint(config.appInfo, {} as any)}`
-        ).getAsStringDangerous(),
+        path: pluginConfig?.oauth?.clientsEndpoint ?? "/oauth/clients",
         method: "put",
         verifySessionOptions: { sessionRequired: false },
         handler: async (req, res, _session, userContext) => {
@@ -191,9 +233,7 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
       });
 
       routeHandlers.push({
-        path: new NormalisedURLPath(
-          `${pluginInterface.getClientsEndpoint(config.appInfo, {} as any)}`
-        ).getAsStringDangerous(),
+        path: pluginConfig?.oauth?.clientsEndpoint ?? "/oauth/clients",
         method: "delete",
         verifySessionOptions: { sessionRequired: false },
         handler: async (req, res, _session, userContext) => {

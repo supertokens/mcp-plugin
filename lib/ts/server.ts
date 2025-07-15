@@ -10,7 +10,6 @@ import {
   PluginRouteHandler,
   UserContext,
 } from "supertokens-node/types";
-import { RecipeUserId } from "supertokens-node";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import {
   BaseRequest,
@@ -50,6 +49,16 @@ export default class SuperTokensMcpServer extends McpServer {
     this.claimValidators = serverInfo.claimValidators;
   }
 
+  getClaims() {
+    const claims = [];
+    for (const validator of this.claimValidators ?? []) {
+      if ("claim" in validator) {
+        claims.push(validator.claim);
+      }
+    }
+    return claims;
+  }
+
   verifySession(next: handlerType): handlerType {
     return async (req, res, session, userContext) => {
       let jwt: string | undefined = undefined;
@@ -78,7 +87,7 @@ export default class SuperTokensMcpServer extends McpServer {
       if (this.validateTokenPayload !== undefined) {
         const result = await this.validateTokenPayload(payload, userContext);
         if (result.status === "ERROR") {
-          res.setStatusCode(401);
+          res.setStatusCode(403);
           res.sendJSONResponse({ error: result.message });
           return null;
         }
@@ -86,25 +95,9 @@ export default class SuperTokensMcpServer extends McpServer {
 
       if (this.claimValidators !== undefined) {
         for (const validator of this.claimValidators) {
-          if ("claim" in validator) {
-            const claim = validator.claim;
-            const claimValue = await claim.fetchValue(
-              payload.sub as string,
-              new RecipeUserId(payload.rsub as string),
-              payload.tId as string,
-              payload,
-              userContext
-            );
-            payload = claim.addToPayload_internal(
-              payload,
-              claimValue,
-              userContext
-            );
-          }
-
           const result = await validator.validate(payload, userContext);
           if (!result.isValid) {
-            res.setStatusCode(401);
+            res.setStatusCode(403);
             res.sendJSONResponse({ error: result.reason });
             return null;
           }

@@ -4,46 +4,26 @@ import OAuth2Provider from "supertokens-node/recipe/oauth2provider";
 import { MCPPluginConfig, MCPPluginInterface } from "./types";
 import { AppInfo, UserContext } from "supertokens-node/types";
 import NormalisedURLDomain from "supertokens-node/lib/build/normalisedURLDomain";
-import NormalisedURLPath from "supertokens-node/lib/build/normalisedURLPath";
 import crypto from "crypto";
+import NormalisedURLPath from "supertokens-node/lib/build/normalisedURLPath";
 
-export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface {
+export default function (
+  appInfo: AppInfo,
+  pluginConfig?: MCPPluginConfig
+): MCPPluginInterface {
+  const apiDomain = new NormalisedURLDomain(
+    appInfo.apiDomain
+  ).getAsStringDangerous();
+  const registrationPath = new NormalisedURLPath(
+    pluginConfig?.oauth?.registrationEndpoint ?? "/oauth/register"
+  ).getAsStringDangerous();
+  const registrationEndpoint = `${apiDomain}${registrationPath}`;
+  const clientsPath = new NormalisedURLPath(
+    pluginConfig?.oauth?.clientsEndpoint ?? "/oauth/clients"
+  ).getAsStringDangerous();
+  const clientsEndpoint = `${apiDomain}${clientsPath}`;
+
   return {
-    getApiDomain: function (appInfo: AppInfo) {
-      return new NormalisedURLDomain(appInfo.apiDomain).getAsStringDangerous();
-    },
-
-    getAuthBaseUrl: function (
-      this: MCPPluginInterface,
-      appInfo: AppInfo,
-      _userContext: UserContext
-    ): string {
-      return (
-        new NormalisedURLDomain(appInfo.apiDomain).getAsStringDangerous() +
-        (appInfo.apiBasePath !== undefined
-          ? new NormalisedURLPath(appInfo.apiBasePath).getAsStringDangerous()
-          : "")
-      );
-    },
-
-    getRegistrationEndpoint: function (
-      this: MCPPluginInterface,
-      appInfo: AppInfo,
-      userContext: UserContext
-    ) {
-      const baseUrl = this.getAuthBaseUrl(appInfo, userContext);
-      return `${baseUrl}/oauth/register`;
-    },
-
-    getClientsEndpoint: function (
-      this: MCPPluginInterface,
-      appInfo: AppInfo,
-      userContext: UserContext
-    ) {
-      const baseUrl = this.getAuthBaseUrl(appInfo, userContext);
-      return `${baseUrl}/oauth/clients`;
-    },
-
     getRegistrationAccessTokenForClient: async function (
       clientId: string,
       _userContext: UserContext
@@ -73,14 +53,9 @@ export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface {
 
     wellKnownOAuthAuthorizationServer: async function (
       this: MCPPluginInterface,
-      appInfo: AppInfo,
-      userContext: UserContext
+      _userContext: UserContext
     ) {
       const oauthConfig = await OpenID.getOpenIdDiscoveryConfiguration();
-      const registrationEndpoint = this.getRegistrationEndpoint(
-        appInfo,
-        userContext
-      );
       return {
         ...oauthConfig,
         response_types_supported: ["code", "id_token", "id_token token"],
@@ -92,11 +67,8 @@ export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface {
 
     wellKnownOAuthProtectedResource: async function (
       this: MCPPluginInterface,
-      appInfo: AppInfo,
-      userContext: UserContext
+      _userContext: UserContext
     ) {
-      const apiDomain = this.getApiDomain(appInfo, userContext);
-      const baseUrl = this.getAuthBaseUrl(appInfo, userContext);
       const scopes = pluginConfig?.oauth?.supportedScopes ?? [
         "openid",
         "email",
@@ -105,7 +77,11 @@ export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface {
 
       return {
         resource: `${apiDomain}`,
-        authorization_servers: [`${baseUrl}`],
+        authorization_servers: [
+          `${apiDomain}${new NormalisedURLPath(
+            appInfo.apiBasePath ?? "/auth"
+          ).getAsStringDangerous()}`,
+        ],
         bearer_methods_supported: ["header"],
         scopes_supported: scopes,
       };
@@ -113,7 +89,6 @@ export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface {
 
     registerOAuthClient: async function (
       this: MCPPluginInterface,
-      appInfo: AppInfo,
       client: Record<string, any>,
       userContext: UserContext
     ) {
@@ -139,10 +114,7 @@ export default function (pluginConfig?: MCPPluginConfig): MCPPluginInterface {
           response.client.clientId,
           userContext
         );
-        const registrationClientUri = `${this.getAuthBaseUrl(
-          appInfo,
-          userContext
-        )}/oauth/clients?client_id=${response.client.clientId}`;
+        const registrationClientUri = `${clientsEndpoint}?client_id=${response.client.clientId}`;
 
         return {
           status: "OK",
