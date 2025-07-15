@@ -1,7 +1,14 @@
 import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
 import { ServerOptions } from "@modelcontextprotocol/sdk/server/index.js";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { Implementation } from "@modelcontextprotocol/sdk/types";
+import {
+  McpServer,
+  RegisteredTool,
+  ToolCallback,
+} from "@modelcontextprotocol/sdk/server/mcp.js";
+import {
+  Implementation,
+  ToolAnnotations,
+} from "@modelcontextprotocol/sdk/types";
 
 import OAuth2Provider from "supertokens-node/recipe/oauth2provider";
 import { SessionClaimValidator } from "supertokens-node/recipe/session";
@@ -18,6 +25,7 @@ import {
 
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { randomUUID } from "node:crypto";
+import { ZodRawShape } from "zod";
 
 export type ServerInfo = Implementation & {
   path: string;
@@ -40,6 +48,7 @@ export default class SuperTokensMcpServer extends McpServer {
   private transports: {
     [sessionId: string]: StreamableHTTPServerTransport;
   } = {};
+  private apiHandlers: PluginRouteHandler[] = [];
 
   constructor(serverInfo: ServerInfo, options?: ServerOptions) {
     super(serverInfo, options);
@@ -123,6 +132,7 @@ export default class SuperTokensMcpServer extends McpServer {
       this.getPOSTHandler(),
       this.getGETHandler(),
       this.getDELETEHandler(),
+      ...this.apiHandlers,
     ];
   }
 
@@ -219,5 +229,56 @@ export default class SuperTokensMcpServer extends McpServer {
         this.postRequestHandler(req, res)
       ),
     };
+  }
+
+  registerToolWithAPI<
+    InputArgs extends ZodRawShape,
+    OutputArgs extends ZodRawShape
+  >(
+    name: string,
+    path: string,
+    config: {
+      title?: string;
+      description?: string;
+      inputSchema?: InputArgs;
+      outputSchema?: OutputArgs;
+      annotations?: ToolAnnotations;
+    },
+    cb: ToolCallback<InputArgs>
+  ): RegisteredTool {
+    let result = super.registerTool(name, config, cb);
+
+    this.apiHandlers.push({
+      path: path,
+      method: "post",
+      verifySessionOptions: {
+        sessionRequired: true,
+        overrideGlobalClaimValidators: () => this.claimValidators ?? [],
+      },
+      handler: async (req, res, session, _userContext) => {
+        const body = await req.getJSONBody();
+        const result = await cb(body, {
+          requestId: "api-request",
+          sendNotification: async () => {},
+          sendRequest: (async () => {}) as any,
+          signal: {} as any,
+          authInfo: session
+            ? {
+                clientId: "na",
+                token: session.getAccessToken(),
+                scopes: [],
+                extra: session.getAccessTokenPayload(),
+                expiresAt: session.getAccessTokenPayload().exp,
+              }
+            : undefined,
+        });
+
+        res.setStatusCode(200);
+        res.sendJSONResponse(result.structuredContent ?? result.content);
+        return null;
+      },
+    });
+
+    return result;
   }
 }
