@@ -3,7 +3,7 @@ import { Tool } from "../../common/types";
 import { MCPServerError } from "../../common/error";
 
 const SearchDocumentationParametersSchema = z.object({
-  searchPhrase: z.string().describe(`The search phrase to use.`),
+  searchTerm: z.string().describe(`The search phrase to use.`),
 });
 
 type SearchDocumentationParameters = z.infer<
@@ -13,11 +13,14 @@ type SearchDocumentationParameters = z.infer<
 const DocumenatationSearchEndpoint = `https://api.supertokens.com/website/documentation/search`;
 
 async function searchDocumentationHandler({
-  searchPhrase,
+  searchTerm,
 }: SearchDocumentationParameters) {
   const response = await fetch(DocumenatationSearchEndpoint, {
     method: "POST",
-    body: JSON.stringify({ searchPhrase }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ searchTerm }),
   });
   if (!response.ok) {
     throw new MCPServerError(
@@ -43,7 +46,7 @@ export const SearchDocumentationTool: Tool = {
     title: "Search documentation",
   },
   description: `
-  Searches across the SuperTokens documentation for pages that match your search phrase.
+  Searches across the SuperTokens documentation for pages that match your query.
   Use it to find relevant information when you don't have a specific URL or you don't know how to resolve a problem.
   Select an item from the returned list and use the "read_documentation" tool to access the documentation page.
 
@@ -52,14 +55,15 @@ export const SearchDocumentationTool: Tool = {
   - Include recipe names to narrow results (e.g., "emailpassword", "passwordless", "thirdparty", "multitenancy")
 
   ## Input:
-  - phrase:
-  ${SearchDocumentationParametersSchema.shape.searchPhrase.description}
+  - searchTerm:
+  ${SearchDocumentationParametersSchema.shape.searchTerm.description}
 
   ## Return Value:
   List of search results where each item has the following fields:
   - url: The documentation page URL
-  - pageTitle: The page title
-  - matchedContent: The content that was matched
+  - title: The title of the section/page that was matched
+  - content: The content that was matched
+  - hierarchy: The nested hierarchy that points to where in the page is the match located
   - metadata: Information about that particular page (the recipe that it belongs to, the page type, etc.)
   `,
   input: SearchDocumentationParametersSchema,
