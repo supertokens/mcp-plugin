@@ -27,7 +27,7 @@ import { CreateUserTool } from "./users/createUser";
 import { DeleteUserTool } from "./users/deleteUser";
 import { UpdateUserMetadataTool } from "./user-metadata/updateUserMetadata";
 import { GetUserMetadataTool } from "./user-metadata/getUserMetadata";
-import { getMessageFromError, isRecipeAvailable } from "../common/error";
+import { getMessageFromError } from "../common/error";
 import { getToolContext } from "../common/config";
 
 export const Tools: Tool[] = [
@@ -70,9 +70,6 @@ export async function callTool(tool: Tool, args: any) {
       args
     )}`
   );
-  if (tool.recipes.length > 0) {
-    tool.recipes.forEach((recipe) => isRecipeAvailable(recipe));
-  }
 
   const parsedParameters = tool.input.safeParse(args);
   if (!parsedParameters.success) {

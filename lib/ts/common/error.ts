@@ -21,35 +21,3 @@ export function getMessageFromError(error: unknown) {
   }
   return String(error);
 }
-
-export const RecipeNameToSDKObjectRecord = {
-  userroles: UserRoles,
-  usermetadata: UserMetadata,
-  multitenancy: Multitenancy,
-  emailpassword: EmailPassword,
-  passwordless: Passwordless,
-} as const;
-
-// TODO: Find a better way to figure out if a recipe is available
-export function isRecipeAvailable(recipe: RecipeName): void | never {
-  const sdkObject = RecipeNameToSDKObjectRecord[recipe];
-  if (!sdkObject) {
-    throw new MCPServerError(
-      `Recipe ${recipe} is not available`,
-      "MCP_TOOL_CALL_ERROR"
-    );
-  }
-
-  try {
-    // @ts-expect-error
-    sdkObject.init();
-  } catch (error) {
-    const message = getMessageFromError(error);
-    if (message.includes("has already been initialised")) return;
-  }
-
-  throw new MCPServerError(
-    `You need to initialize the ${recipe}`,
-    "MCP_TOOL_CALL_ERROR"
-  );
-}
