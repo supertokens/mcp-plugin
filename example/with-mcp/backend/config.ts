@@ -21,7 +21,7 @@ const server = new SuperTokensMcpServer({
       status: "OK",
     };
   },
-  claimValidators: [UserRoleClaim.validators.includes("admin")],
+  claimValidators: [UserRoleClaim.validators.includes("admin", 99999)],
 });
 
 server.registerTool(

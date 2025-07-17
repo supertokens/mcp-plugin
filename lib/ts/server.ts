@@ -255,8 +255,27 @@ export default class SuperTokensMcpServer extends McpServer {
         sessionRequired: true,
         overrideGlobalClaimValidators: () => this.claimValidators ?? [],
       },
-      handler: async (req, res, session, _userContext) => {
+      handler: async (req, res, session, userContext) => {
         const body = await req.getJSONBody();
+
+        if (this.validateTokenPayload !== undefined) {
+          if (session === undefined) {
+            res.setStatusCode(401);
+            res.sendJSONResponse({ error: "No session found" });
+            return null;
+          }
+
+          const validationResult = await this.validateTokenPayload(
+            session.getAccessTokenPayload(),
+            userContext
+          );
+          if (validationResult.status === "ERROR") {
+            res.setStatusCode(403);
+            res.sendJSONResponse({ error: validationResult.message });
+            return null;
+          }
+        }
+
         const result = await cb(body, {
           requestId: "api-request",
           sendNotification: async () => {},
