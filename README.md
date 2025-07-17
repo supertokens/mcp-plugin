@@ -84,3 +84,5 @@ SuperTokens.init({
     }
 })
 ```
+
+Note: OAuth2Provider recipe must be initialised for the MCP authentication to work.
