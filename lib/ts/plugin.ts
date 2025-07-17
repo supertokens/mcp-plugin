@@ -33,7 +33,6 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
             ...oI,
             buildAccessTokenPayload: async (input) => {
               let payload = await oI.buildAccessTokenPayload(input);
-              console.log("buildAccessTokenPayload", payload);
 
               if (input.sessionHandle === undefined) {
                 return payload;
@@ -66,7 +65,6 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
                 );
               }
 
-              console.log("Final-buildAccessTokenPayload", payload);
               return payload;
             },
           };

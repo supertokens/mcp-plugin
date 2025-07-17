@@ -46,7 +46,6 @@ app.get("/sessioninfo", verifySession(), async (req: SessionRequest, res) => {
 
 app.get("/openid", async (_req, res) => {
   const oauthConfig = await OpenID.getOpenIdDiscoveryConfiguration();
-  console.log(oauthConfig);
   return res.send(oauthConfig);
 });
 
