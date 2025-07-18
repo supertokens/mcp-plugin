@@ -1,5 +1,9 @@
 import Session from "supertokens-node/recipe/session";
-import { PluginRouteHandler, SuperTokensPlugin } from "supertokens-node/types";
+import {
+  PluginRouteHandler,
+  SuperTokensPlugin,
+  UserContext,
+} from "supertokens-node/types";
 
 import OverrideableBuilder from "supertokens-js-override";
 
@@ -8,6 +12,7 @@ import { enableDebugLogs } from "./common/logger";
 import { MCPPluginConfig, MCPPluginInterface } from "./types";
 import pluginInterfaceImpl from "./pluginInterfaceImpl";
 import { SessionClaim } from "supertokens-node/lib/build/recipe/session/types";
+import { BaseRequest } from "supertokens-node/lib/build/framework";
 
 export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
   let pluginInterface: MCPPluginInterface;
@@ -24,7 +29,7 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
   return {
     id: PLUGIN_ID,
     version: PLUGIN_VERSION,
-    compatibleSDKVersions: ["23.0.0"],
+    compatibleSDKVersions: ["23.0.0", ">=23.0.0"],
     overrideMap: {
       oauth2provider: {
         recipeInitRequired: true,
@@ -150,7 +155,8 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
       });
 
       routeHandlers.push({
-        path: pluginConfig?.oauth?.registrationEndpoint ?? "/oauth/register",
+        path:
+          pluginConfig?.oauth?.registrationEndpointPath ?? "/oauth/register",
         method: "post",
         verifySessionOptions: { sessionRequired: false },
         handler: async (req, res, _session, userContext) => {
@@ -169,8 +175,28 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
         },
       });
 
+      const validateRegistrationAccessToken = async (
+        req: BaseRequest,
+        clientId: string,
+        clientSecret: string | undefined,
+        userContext: UserContext
+      ) => {
+        const accessToken = req
+          .getHeaderValue("Authorization")
+          ?.replace("Bearer ", "");
+        if (accessToken === undefined) {
+          return false;
+        }
+        return await pluginInterface.validateRegistrationAccessToken(
+          clientId,
+          clientSecret,
+          accessToken,
+          userContext
+        );
+      };
+
       routeHandlers.push({
-        path: pluginConfig?.oauth?.clientsEndpoint ?? "/oauth/clients",
+        path: pluginConfig?.oauth?.clientsEndpointPath ?? "/oauth/clients",
         method: "get",
         verifySessionOptions: { sessionRequired: false },
         handler: async (req, res, _session, userContext) => {
@@ -188,7 +214,25 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
             clientId,
             userContext
           );
+
           if (response.status === "OK") {
+            if (
+              !(await validateRegistrationAccessToken(
+                req,
+                clientId,
+                response.client_secret,
+                userContext
+              ))
+            ) {
+              res.setStatusCode(401);
+              res.sendJSONResponse({
+                status: "ERROR",
+                error: "unauthorized",
+                errorDescription: "Either access token is invalid or missing",
+              });
+              return null;
+            }
+
             res.setStatusCode(200);
             res.sendJSONResponse(response);
           } else {
@@ -200,7 +244,7 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
       });
 
       routeHandlers.push({
-        path: pluginConfig?.oauth?.clientsEndpoint ?? "/oauth/clients",
+        path: pluginConfig?.oauth?.clientsEndpointPath ?? "/oauth/clients",
         method: "put",
         verifySessionOptions: { sessionRequired: false },
         handler: async (req, res, _session, userContext) => {
@@ -214,6 +258,35 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
             });
             return null;
           }
+
+          const clientResponse = await pluginInterface.getOAuthClient(
+            clientId,
+            userContext
+          );
+
+          if (clientResponse.status === "OK") {
+            if (
+              !(await validateRegistrationAccessToken(
+                req,
+                clientId,
+                clientResponse.client_secret,
+                userContext
+              ))
+            ) {
+              res.setStatusCode(401);
+              res.sendJSONResponse({
+                status: "ERROR",
+                error: "unauthorized",
+                errorDescription: "Either access token is invalid or missing",
+              });
+              return null;
+            }
+          } else {
+            res.setStatusCode(400);
+            res.sendJSONResponse(clientResponse);
+            return null;
+          }
+
           const response = await pluginInterface.updateOAuthClient(
             clientId,
             await req.getBodyAsJSONOrFormData(),
@@ -231,7 +304,7 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
       });
 
       routeHandlers.push({
-        path: pluginConfig?.oauth?.clientsEndpoint ?? "/oauth/clients",
+        path: pluginConfig?.oauth?.clientsEndpointPath ?? "/oauth/clients",
         method: "delete",
         verifySessionOptions: { sessionRequired: false },
         handler: async (req, res, _session, userContext) => {
@@ -245,6 +318,35 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
             });
             return null;
           }
+
+          const clientResponse = await pluginInterface.getOAuthClient(
+            clientId,
+            userContext
+          );
+
+          if (clientResponse.status === "OK") {
+            if (
+              !(await validateRegistrationAccessToken(
+                req,
+                clientId,
+                clientResponse.client_secret,
+                userContext
+              ))
+            ) {
+              res.setStatusCode(401);
+              res.sendJSONResponse({
+                status: "ERROR",
+                error: "unauthorized",
+                errorDescription: "Either access token is invalid or missing",
+              });
+              return null;
+            }
+          } else {
+            res.setStatusCode(400);
+            res.sendJSONResponse(clientResponse);
+            return null;
+          }
+
           const response = await pluginInterface.deleteOAuth2Client(
             clientId,
             userContext

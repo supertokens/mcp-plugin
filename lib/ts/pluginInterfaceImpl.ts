@@ -15,38 +15,41 @@ export default function (
     appInfo.apiDomain
   ).getAsStringDangerous();
   const registrationPath = new NormalisedURLPath(
-    pluginConfig?.oauth?.registrationEndpoint ?? "/oauth/register"
+    pluginConfig?.oauth?.registrationEndpointPath ?? "/oauth/register"
   ).getAsStringDangerous();
   const registrationEndpoint = `${apiDomain}${registrationPath}`;
   const clientsPath = new NormalisedURLPath(
-    pluginConfig?.oauth?.clientsEndpoint ?? "/oauth/clients"
+    pluginConfig?.oauth?.clientsEndpointPath ?? "/oauth/clients"
   ).getAsStringDangerous();
   const clientsEndpoint = `${apiDomain}${clientsPath}`;
 
   return {
     getRegistrationAccessTokenForClient: async function (
+      this: MCPPluginInterface,
       clientId: string,
+      clientSecret: string | undefined,
       _userContext: UserContext
     ) {
-      const salt =
-        pluginConfig?.oauth?.registrationAccessTokenSalt ?? "default-salt";
+      const secret =
+        pluginConfig?.oauth?.registrationAccessTokenSecret ?? "default-secret";
       const hash = crypto
         .createHash("sha256")
-        .update(salt + clientId)
+        .update(`${clientId}:${clientSecret}:${secret}`)
         .digest("hex");
       return hash;
     },
 
     validateRegistrationAccessToken: async function (
       clientId: string,
+      clientSecret: string | undefined,
       accessToken: string,
       _userContext: UserContext
     ) {
-      const salt =
-        pluginConfig?.oauth?.registrationAccessTokenSalt ?? "default-salt";
+      const secret =
+        pluginConfig?.oauth?.registrationAccessTokenSecret ?? "default-secret";
       const hash = crypto
         .createHash("sha256")
-        .update(salt + clientId)
+        .update(`${clientId}:${clientSecret}:${secret}`)
         .digest("hex");
       return hash === accessToken;
     },
@@ -69,11 +72,7 @@ export default function (
       this: MCPPluginInterface,
       _userContext: UserContext
     ) {
-      const scopes = pluginConfig?.oauth?.supportedScopes ?? [
-        "openid",
-        "email",
-        "offline_access",
-      ];
+      const scopes = ["openid", "email", "offline_access"];
 
       return {
         resource: `${apiDomain}`,
@@ -112,6 +111,7 @@ export default function (
       if (response.status === "OK") {
         const registrationAccessToken = await this.getRegistrationAccessTokenForClient(
           response.client.clientId,
+          response.client.clientSecret,
           userContext
         );
         const registrationClientUri = `${clientsEndpoint}?client_id=${response.client.clientId}`;

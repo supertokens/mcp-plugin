@@ -3,12 +3,15 @@ import SuperTokensMcpServer from "./server";
 import OverrideableBuilder from "supertokens-js-override";
 
 export type MCPPluginInterface = {
+  // TODO seems like hydra create registration access token, see if we can use that
   getRegistrationAccessTokenForClient(
     clientId: string,
+    clientSecret: string | undefined,
     userContext: UserContext
   ): Promise<string>;
   validateRegistrationAccessToken(
     clientId: string,
+    clientSecret: string | undefined,
     accessToken: string,
     userContext: UserContext
   ): Promise<boolean>;
@@ -74,10 +77,9 @@ export type MCPPluginInterface = {
 export type MCPPluginConfig = {
   mcpServers: SuperTokensMcpServer[];
   oauth?: {
-    registrationEndpoint?: string;
-    clientsEndpoint?: string;
-    supportedScopes?: string[];
-    registrationAccessTokenSalt?: string;
+    registrationEndpointPath?: string;
+    clientsEndpointPath?: string;
+    registrationAccessTokenSecret?: string;
   };
   override?: (
     originalImplementation: MCPPluginInterface,
