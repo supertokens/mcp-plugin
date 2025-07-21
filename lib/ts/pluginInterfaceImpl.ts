@@ -61,6 +61,7 @@ export default function (
       const oauthConfig = await OpenID.getOpenIdDiscoveryConfiguration();
       return {
         ...oauthConfig,
+        scopes_supported: ["openid", "email", "offline_access"],
         response_types_supported: ["code", "id_token", "id_token token"],
         code_challenge_methods_supported: ["S256"],
         registration_endpoint: registrationEndpoint,
