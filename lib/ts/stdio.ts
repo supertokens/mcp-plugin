@@ -70,7 +70,9 @@ async function initMCPServer() {
   logDebugMessage(`server is running on stdio`);
 }
 
-initMCPServer().catch((err) => {
-  logDebugMessage(`Server error: ${getMessageFromError(err)}`);
-  process.exit(1);
-});
+export function runStdioAdminMCPServer() {
+  initMCPServer().catch((err) => {
+    logDebugMessage(`Server error: ${getMessageFromError(err)}`);
+    process.exit(1);
+  });
+}
