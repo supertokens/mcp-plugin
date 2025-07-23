@@ -17,9 +17,6 @@ export let SuperTokensAdminMcpServer = Wrapper.SuperTokensAdminMcpServer;
 export type { MCPPluginInterface, MCPPluginConfig };
 
 // Run the admin server over stdio if the index file is being run directly
-if (
-  import.meta.url === `file://${process.argv[1]}` &&
-  process.argv[2] === "--stdio"
-) {
+if (process.argv[2] === "--stdio") {
   runStdioAdminMCPServer();
 }
