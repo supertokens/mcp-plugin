@@ -3,6 +3,7 @@
 import ThirdParty from "supertokens-auth-react/recipe/thirdparty";
 import { ThirdPartyPreBuiltUI } from "supertokens-auth-react/recipe/thirdparty/prebuiltui";
 import Session from "supertokens-auth-react/recipe/session";
+import OAuth2Provider from "supertokens-auth-react/recipe/oauth2provider";
 
 export function getApiDomain() {
   const apiPort = 3001;
@@ -37,6 +38,7 @@ export const SuperTokensConfig = {
       },
     }),
     Session.init(),
+    OAuth2Provider.init(),
   ],
   getRedirectionURL: async (context: any) => {
     if (context.action === "SUCCESS") {
