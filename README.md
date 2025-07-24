@@ -41,8 +41,7 @@ const mcpServer = new SuperTokensMcpServer({
   // 2.
   claimValidators: [
     // Standard Supertokens Session claim validators such as...
-    UserRoleClaim.validators.includes("admin", 99999),
-    // Make sure to use a large maxAge in the validators since OAuth2 Access token cannot be updated by fetching value again
+    UserRoleClaim.validators.includes("admin"),
   ],
 });
 ```
