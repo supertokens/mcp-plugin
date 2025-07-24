@@ -103,10 +103,12 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
         appInfo: {
           appName: config.appInfo.appName,
           apiDomain: config.appInfo.apiDomain.getAsStringDangerous(),
-          websiteDomain: config.appInfo.getTopLevelWebsiteDomain({
-            request: undefined,
-            userContext: {} as UserContext,
-          }),
+          websiteDomain: config.appInfo
+            .getOrigin({
+              request: undefined,
+              userContext: {} as UserContext,
+            })
+            .getAsStringDangerous(),
           apiBasePath: config.appInfo.apiBasePath.getAsStringDangerous(),
           websiteBasePath: config.appInfo.websiteBasePath.getAsStringDangerous(),
           apiGatewayPath: config.appInfo.apiGatewayPath.getAsStringDangerous(),
