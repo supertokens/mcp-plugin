@@ -43,7 +43,7 @@ jobs:
       - name: Publish to NPM
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-          npm publish --provenance --access public
+          npm publish --tag latest --access public
 
       - name: Merge to main branch
         run: |
