@@ -46,7 +46,7 @@
   "homepage": "https://github.com/supertokens/supertokens-node#readme",
   "peerDependencies": {
     "@modelcontextprotocol/sdk": "^1.13.0",
-    "supertokens-node": "github:supertokens/supertokens-node#23.0",
+    "supertokens-node": "latest",
     "zod": "^3.25.67"
   },
   "devDependencies": {

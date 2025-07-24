@@ -102,11 +102,11 @@ export default function (pluginConfig?: MCPPluginConfig): SuperTokensPlugin {
       setToolContext({
         appInfo: {
           appName: config.appInfo.appName,
-          apiDomain: config.appInfo.apiDomain,
-          websiteDomain: config.appInfo.websiteDomain,
-          apiBasePath: config.appInfo.apiBasePath ?? "/auth",
-          websiteBasePath: config.appInfo.websiteBasePath ?? "/auth",
-          apiGatewayPath: config.appInfo.apiGatewayPath,
+          apiDomain: config.appInfo.apiDomain.getAsStringDangerous(),
+          websiteDomain: config.appInfo.websiteDomain.getAsStringDangerous(),
+          apiBasePath: config.appInfo.apiBasePath.getAsStringDangerous(),
+          websiteBasePath: config.appInfo.websiteBasePath.getAsStringDangerous(),
+          apiGatewayPath: config.appInfo.apiGatewayPath.getAsStringDangerous(),
         },
         supertokens: {
           connectionURI: config.supertokens.connectionURI,

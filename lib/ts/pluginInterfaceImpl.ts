@@ -2,18 +2,15 @@ import OpenID from "supertokens-node/recipe/openid";
 import OAuth2Provider from "supertokens-node/recipe/oauth2provider";
 
 import { MCPPluginConfig, MCPPluginInterface } from "./types";
-import { AppInfo, UserContext } from "supertokens-node/types";
-import NormalisedURLDomain from "supertokens-node/lib/build/normalisedURLDomain";
+import { NormalisedAppinfo, UserContext } from "supertokens-node/types";
 import crypto from "crypto";
 import NormalisedURLPath from "supertokens-node/lib/build/normalisedURLPath";
 
 export default function (
-  appInfo: AppInfo,
+  appInfo: NormalisedAppinfo,
   pluginConfig?: MCPPluginConfig
 ): MCPPluginInterface {
-  const apiDomain = new NormalisedURLDomain(
-    appInfo.apiDomain
-  ).getAsStringDangerous();
+  const apiDomain = appInfo.apiDomain.getAsStringDangerous();
   const registrationPath = new NormalisedURLPath(
     pluginConfig?.oauth?.registrationEndpointPath ?? "/oauth/register"
   ).getAsStringDangerous();
@@ -78,9 +75,7 @@ export default function (
       return {
         resource: `${apiDomain}`,
         authorization_servers: [
-          `${apiDomain}${new NormalisedURLPath(
-            appInfo.apiBasePath ?? "/auth"
-          ).getAsStringDangerous()}`,
+          `${apiDomain}${appInfo.apiBasePath.getAsStringDangerous()}`,
         ],
         bearer_methods_supported: ["header"],
         scopes_supported: scopes,

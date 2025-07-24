@@ -4,7 +4,6 @@ import Session from "supertokens-node/recipe/session";
 import Dashboard from "supertokens-node/recipe/dashboard";
 import UserRoles, { UserRoleClaim } from "supertokens-node/recipe/userroles";
 import OAuth2Provider from "supertokens-node/recipe/oauth2provider";
-import OpenID from "supertokens-node/recipe/openid";
 import type { TypeInput } from "supertokens-node/types";
 import SuperTokensMcpPlugin, {
   SuperTokensAdminMcpServer,
