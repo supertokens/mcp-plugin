@@ -1,6 +1,6 @@
 {
   "name": "supertokens-mcp-plugin",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "MCP plugin for SuperTokens",
   "main": "index.js",
   "scripts": {
