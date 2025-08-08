@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { PLUGIN_ID, PLUGIN_VERSION, setToolContext } from "./common/config";
@@ -76,3 +77,5 @@ export function runStdioAdminMCPServer() {
     process.exit(1);
   });
 }
+
+runStdioAdminMCPServer();
