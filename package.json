@@ -3,6 +3,7 @@
   "version": "1.0.2",
   "description": "MCP plugin for SuperTokens",
   "main": "index.js",
+  "bin": "lib/build/stdio.js",
   "scripts": {
     "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json",
     "pretty": "npx pretty-quick . --ignore-path .gitignore",
